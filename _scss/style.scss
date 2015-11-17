@@ -1,0 +1,51 @@
+@import 'mixins';
+@import 'reset';
+
+body {
+  font-size: 62.5%;
+  font-family: 'Helvetica neue', Helvetica, Arial, sans-serif;
+}
+
+main {
+  @include center;
+  padding-top: 30px;
+  width: 960px;
+  font-size: 1.8em;
+}
+
+h1 {
+  font-size: 1.3em;
+}
+
+.name{
+  font-size: 0.75em;
+}
+
+.value{
+  margin-left: 20px;
+  color: blue;
+}
+
+// .ui-slider-handle, .ui-state-default, .ui-corner-all{
+//   height: 5px;
+//   background-color: black;
+// }
+
+.param{
+  margin-bottom: 20px;
+  margin-top: 15px;
+  width: 350px;
+  height: 20px;
+}
+
+#cnvs{
+	background-color: lightblue;
+
+}
+
+#range{
+	width: 350px;
+	margin-top: 50px;
+	margin-left: 55px;
+}
+
