@@ -22,7 +22,7 @@ export default class Circle extends EventEmitter {
 
 		this.position = position;
 		//this.name = "testn";
-		this.fill = 'orange';
+		this.fill = '#90FFFF';
 		this._onFrame();
 
 		this.parameters = parameters;

@@ -1,16 +1,13 @@
 'use strict';
 
-// some features need the be polyfilled..
-// https://babeljs.io/docs/usage/polyfill/
-
-// import 'babel-core/polyfill';
-// or import specific polyfills
-
 let scene, camera, renderer;
-let amountSpheres;
+let amountSpheres, amountCubes;
 let spheres = [];
-//let circle;
-let parameters;
+let cubes = [];
+let radiusSphereCollection, radiusCubeCollection;
+
+let parametersSpheres, parametersCubes;
+let analyser, frequencyData, ctx, audio;
 
 
 let OrbitControls = require('three-orbit-controls')(THREE);
@@ -18,23 +15,55 @@ let OrbitControls = require('three-orbit-controls')(THREE);
 import {sliderParameters} from './data/';
 import {MathUtil} from './modules/util/';
 
-import Circle from './modules/svg/Circle';
+import {Circle, Cube} from './modules/svg/';
 
 //import {$} from './helpers/util';
 //import helloworldTpl from '../_hbs/helloworld';
 
 const init = () => {
-	amountSpheres = 10;
 
-	parameters = {
-	radius: 15,
-	widthSegments: 8,
-	heightSegments: 8,
-	phiStart: 0,
-	phiLength: 6,
-	thetaStart: 1,
-	thetaLength: 4.2
-	}
+	radiusCubeCollection = 50;
+	radiusSphereCollection = 50;
+	amountSpheres = 10;
+	amountCubes = 10;
+
+	ctx = new AudioContext();
+	window.AudioContext =
+    window.AudioContext ||
+    window.webkitAudioContext;
+
+	
+	parametersSETUP();
+	slidersSETUP();
+	//analyseAudio();
+
+	scene = new THREE.Scene();
+  	camera = new THREE.PerspectiveCamera(
+	75, window.innerWidth/window.innerHeight, 0.1, 1000
+  );
+
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(
+   window.innerWidth,
+	window.innerHeight
+  );
+
+
+  document.querySelector('main').appendChild(renderer.domElement);
+
+  createSpheres();
+  createCubes();
+  render();
+
+};
+
+const removeEntity = (object) => {
+	var selectedObject = scene.getObjectByName(object.shape.name);
+	scene.remove( selectedObject );
+
+}
+
+const slidersSETUP = () => {
 
 	$('#val_amount_spheres').html(amountSpheres); 
 	$('#amount_spheres').slider({
@@ -45,14 +74,52 @@ const init = () => {
 			value: 10,
 
 			slide: function(event, ui) { 
-				amountSpheres = ui.value;
+				
+
 				$('#val_amount_spheres').html(ui.value); 
 
 				for (let i =0; i<spheres.length; i++){
 					removeEntity(spheres[i]);
 					}
+
+				for (let i =0; i<cubes.length; i++){
+					removeEntity(cubes[i]);
+					}
 					spheres = [];
-					createCircle();
+					cubes = [];
+					amountSpheres = ui.value;
+					amountCubes = ui.value;
+					createSpheres();
+					createCubes();
+				} 
+	})
+
+	$('#radiusCollection_spheres').slider({
+
+			min: 30,
+			max: 200,
+			step: 10,
+			value: 50,
+
+			slide: function(event, ui) { 
+				
+
+				//$('#val_amount_spheres').html(ui.value); 
+
+				for (let i =0; i<spheres.length; i++){
+					removeEntity(spheres[i]);
+					}
+					radiusSphereCollection = ui.value;
+
+				for (let i =0; i<cubes.length; i++){
+					removeEntity(cubes[i]);
+					}
+				// 	spheres = [];
+				// 	cubes = [];
+				// 	amountSpheres = ui.value;
+				// 	amountCubes = ui.value;
+					createSpheres();
+					createCubes();
 				} 
 	})
 
@@ -68,62 +135,66 @@ const init = () => {
 			value: sliderParameters[i].value,
 
 			slide: function(event, ui) { 
-				$('#val_' + i).html(ui.value); 
+				$('#val_' + i).html(ui.value);
+				scene = new THREE.Scene(); 
 
 				for (let j =0; j<spheres.length; j++){
-					removeEntity(spheres[j]);
+					//removeEntity(spheres[j]);
+					//removeEntity(cubes[j]);
+
 					switch (i){
 						case 0:
-						parameters.radius = ui.value;
+						parametersSpheres.radius = ui.value;
 						spheres[j].setRadius(ui.value);
 						break;
 
 						case 1: 
-						parameters.widthSegments = ui.value;
+						parametersSpheres.widthSegments = ui.value;
 						spheres[j].setWidthSegments(ui.value);
 						break;
 
 						case 2:
-						parameters.heightSegments = ui.value;
+						parametersSpheres.heightSegments = ui.value;
 						spheres[j].setHeightSegments(ui.value);
 						break;
 
 					}
 					scene.add(spheres[j].render());
+					
 					}
+
+					for(let k =0; k <cubes.length; k++){
+						scene.add(cubes[k].render());
+					}	
 				} 
 	  		})
 	  	};
-
-	scene = new THREE.Scene();
-  	camera = new THREE.PerspectiveCamera(
-	75, window.innerWidth/window.innerHeight, 0.1, 1000
-  );
-
-  renderer = new THREE.WebGLRenderer();
-
-  renderer.setSize(
-   window.innerWidth,
-	window.innerHeight
-  );
-
-  //new OrbitControls(camera);
-  document.querySelector('main').appendChild(renderer.domElement);
-
-  createCircle();
-  render();
-
-};
-
-function removeEntity(object) {
-	var selectedObject = scene.getObjectByName(object.shape.name);
-	scene.remove( selectedObject );
-
 }
 
-const createCircle = () => {
+const parametersSETUP = () => {
 
-// this.parameters = {
+	parametersSpheres = {
+	radius: 15,
+	widthSegments: 8,
+	heightSegments: 8,
+	phiStart: 0,
+	phiLength: 6,
+	thetaStart: 1,
+	thetaLength: 4.2
+	}
+
+	parametersCubes = {
+	width: 15,
+	height: 15,
+	widthSegments: 8,
+	heightSegments: 8,
+	depth: 15,
+	depthSegments: 6,
+	}
+}
+
+const createSpheres = () => {
+// this.parametersSpheres = {
  //    radius: radius,
  //    widthSegments: widthSegments,
  //    heightSegments: heightSegments,
@@ -136,22 +207,63 @@ const createCircle = () => {
 	let angle = 0;
 	let step = (2*Math.PI) / amountSpheres;
 
+
  	for(let i = 0; i< amountSpheres; i++ ){
 
- 	 var xPos = Math.round(50 * Math.cos(angle) - parameters.radius/2);
-     var yPos = Math.round(50 * Math.sin(angle) - parameters.radius/2);
+ 	 let xPos = Math.round(radiusSphereCollection * Math.cos(angle) - parametersSpheres.radius/2);
+     let yPos = Math.round(radiusSphereCollection * Math.sin(angle) - parametersSpheres.radius/2);
 
 	 let circle = new Circle(
 	   {x: xPos,
 		y: yPos,
 		z: 10},
-		parameters
+		parametersSpheres
 	 );
 	 angle += step;
 
 	 scene.add(circle.render());
 	 let {x, y, z} = circle.position;
 	 spheres.push(circle);
+
+ }
+ //console.log(amountSpheres, spheres.length);
+
+  camera.position.z = 150;
+  //camera.position.x = 50;
+	//scene.remove(circle.render());
+
+};
+
+const createCubes = () => {
+
+// this.parameters = {
+// width: 15,
+	// height: 15
+	// widthSegments: 8,
+	// heightSegments: 8,
+	// depth: 0,
+	// depthSegments: 6,
+ //  };
+
+	let angle = 0;
+	let step = (2*Math.PI) / amountCubes;
+
+ 	for(let i = 0; i< amountCubes; i++ ){
+
+ 	 let xPos = Math.round(50 * Math.cos(angle) - parametersCubes.width/2);
+     let yPos = Math.round(50 * Math.sin(angle) - parametersCubes.width/2);
+
+	 let cube = new Cube(
+	   {x: xPos,
+		y: yPos,
+		z: 10},
+		parametersCubes
+	 );
+	 angle += step;
+
+	 scene.add(cube.render());
+	 let {x, y, z} = cube.position;
+	 cubes.push(cube);
  }
 
   camera.position.z = 150;
@@ -163,10 +275,26 @@ const createCircle = () => {
 const render = () => {
 
   renderer.render(scene, camera);
-//console.log('render');
+  //analyser.getByteFrequencyData(frequencyData);
   
   requestAnimationFrame(() => render());
 
 };
+
+const analyseAudio = () => {
+
+  audio = document.getElementById('myAudio');
+  let audioSrc = ctx.createMediaElementSource(audio);
+  analyser = ctx.createAnalyser();
+
+  audioSrc.connect(analyser);
+  audioSrc.connect(ctx.destination);
+  analyser.fftSize = 256;
+	frequencyData = new Uint8Array(analyser.frequencyBinCount);
+
+  
+  audio.play();
+ 
+}
 
 init();
