@@ -1,6 +1,6 @@
 'use strict';
 
-import {MathUtil} from '../util/';
+//import {MathUtil} from '../util/';
 
 import EventEmitter from 'eventemitter2';
 
