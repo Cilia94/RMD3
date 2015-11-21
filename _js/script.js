@@ -9,7 +9,6 @@ let radiusSphereCollection, radiusCubeCollection;
 let parametersSpheres, parametersCubes;
 let analyser, /*frequencyData, */ ctx, audio;
 
-
 let OrbitControls = require('three-orbit-controls')(THREE);
 
 import {sliderParameters} from './data/';
@@ -32,6 +31,13 @@ const randomBool = () => {
   return Boolean(Math.round(Math.random()));
 };
 
+import {MathUtil} from './modules/util/';
+
+import {Circle, Cube} from './modules/svg/';
+
+//import {$} from './helpers/util';
+//import helloworldTpl from '../_hbs/helloworld';
+
 const init = () => {
 
 	radiusCubeCollection = 50;
@@ -43,7 +49,6 @@ const init = () => {
 	window.AudioContext =
     window.AudioContext ||
     window.webkitAudioContext;
-
 
 	parametersSETUP();
 	slidersSETUP();
@@ -75,6 +80,17 @@ const init = () => {
 
   new OrbitControls(camera);
 
+	scene = new THREE.Scene();
+  	camera = new THREE.PerspectiveCamera(
+	75, window.innerWidth/window.innerHeight, 0.1, 1000
+  );
+
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(
+   window.innerWidth,
+	window.innerHeight
+  );
+
 
   document.querySelector('main').appendChild(renderer.domElement);
 
@@ -96,6 +112,14 @@ const slidersSETUP = () => {
 
 	$('#amount_spheres').slider({
       min: 0,
+}
+
+const slidersSETUP = () => {
+
+	$('#val_amount_spheres').html(amountSpheres);
+	$('#amount_spheres').slider({
+
+			min: 0,
 			max: 50,
 			step: 2,
 			value: 10,
@@ -104,6 +128,10 @@ const slidersSETUP = () => {
 
 
 				$('#val_amount_spheres').innerHTML = ui.value;
+			slide: function(event, ui) {
+
+
+				$('#val_amount_spheres').html(ui.value);
 
 				for (let i =0; i<spheres.length; i++){
 					removeEntity(spheres[i]);
@@ -120,6 +148,8 @@ const slidersSETUP = () => {
 					createCubes();
 				}
 	});
+				}
+	})
 
 	$('#radiusCollection_spheres').slider({
 
@@ -128,6 +158,10 @@ const slidersSETUP = () => {
 			step: 10,
 			value: 50,
 
+			slide: function(event, ui) {
+
+
+				//$('#val_amount_spheres').html(ui.value);
 			slide: function(event, ui) {
 
 
@@ -165,6 +199,24 @@ const slidersSETUP = () => {
 				$('#val_' . i).html(ui.value);
 				scene = new THREE.Scene();
 
+				}
+	})
+
+
+	  	for(let i =0; i<$('.param').length; i++){
+	  		$('#name_' + i).html(sliderParameters[i].name);
+	  		$('#val_' + i).html(sliderParameters[i].value);
+	  		$('#param_' + i).slider({
+
+		  	min: sliderParameters[i].min,
+			max: sliderParameters[i].max,
+			step: sliderParameters[i].step,
+			value: sliderParameters[i].value,
+
+			slide: function(event, ui) {
+				$('#val_' + i).html(ui.value);
+				scene = new THREE.Scene();
+
 				for (let j =0; j<spheres.length; j++){
 					//removeEntity(spheres[j]);
 					//removeEntity(cubes[j]);
@@ -197,6 +249,11 @@ const slidersSETUP = () => {
 	  		});
 	  	}
 };
+					}
+				}
+	  		})
+	  	};
+}
 
 const parametersSETUP = () => {
 
@@ -219,6 +276,24 @@ const parametersSETUP = () => {
 	 depthSegments: 6
 	};
 };
+	radius: 15,
+	widthSegments: 8,
+	heightSegments: 8,
+	phiStart: 0,
+	phiLength: 6,
+	thetaStart: 1,
+	thetaLength: 4.2
+	}
+
+	parametersCubes = {
+	width: 15,
+	height: 15,
+	widthSegments: 8,
+	heightSegments: 8,
+	depth: 15,
+	depthSegments: 6,
+	}
+}
 
 const createSpheres = () => {
 // this.parametersSpheres = {
@@ -245,11 +320,11 @@ const createSpheres = () => {
 
 	 let circle = new Circle({
     x: xPos,
-		y: yPos,
-		z: 10},
-		parametersSpheres
-	 );
-	 angle += step;
+    y: yPos,
+    z: 10},
+    parametersSpheres
+   );
+   angle += step;
 
 	 scene.add(circle.render());
 	 let {x, y, z} = circle.position;
@@ -328,9 +403,12 @@ const analyseAudio = () => {
   analyser.fftSize = 256;
 	frequencyData = new Uint8Array(analyser.frequencyBinCount);
 
-
   audio.play();
 
 };
+
+  audio.play();
+
+}
 
 init();

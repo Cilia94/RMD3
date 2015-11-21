@@ -1,6 +1,6 @@
 'use strict';
 
-//import {MathUtil} from '../util/';
+import {MathUtil} from '../util/';
 
 import EventEmitter from 'eventemitter2';
 
@@ -74,7 +74,6 @@ export default class Cube extends EventEmitter {
 		let {x, y, z} = this.position;
 
 		let fill = this;
-
     console.log(x, y, z, fill);
 
 		let geometry = new THREE.BoxGeometry(this.parameters.width, this.parameters.height, this.parameters.depth, this.parameters.widthSegments, this.parameters.heightSegments, this.parameters.depthSegments);

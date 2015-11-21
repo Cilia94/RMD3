@@ -1,6 +1,7 @@
 'use strict';
 
-//import {MathUtil} from '../util/';
+
+import {MathUtil} from '../util/';
 
 import EventEmitter from 'eventemitter2';
 
@@ -76,7 +77,6 @@ export default class Circle extends EventEmitter {
 		let {radius, fill} = this;
 
     console.log(x, y, z, fill, radius);
-
 
 		let geometry = new THREE.SphereGeometry(this.parameters.radius, this.parameters.widthSegments, this.parameters.heightSegments);
 
