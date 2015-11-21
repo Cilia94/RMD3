@@ -4,6 +4,7 @@ let scene, camera, renderer;
 let amountSpheres, amountCubes;
 let spheres = [];
 let cubes = [];
+let player;
 let radiusSphereCollection, radiusCubeCollection;
 
 let parametersSpheres, parametersCubes;
@@ -31,6 +32,19 @@ const randomBool = () => {
   return Boolean(Math.round(Math.random()));
 };
 
+const loadSetting = setting => {
+
+  if(setting.type === 'samples'){
+
+    let loader = new BufferLoader(ctx);
+    loader.load(sets[setting.set])
+      .then(data => slidersSETUP(setting, data));
+
+  }else{
+      slidersSETUP(setting);
+  }
+};
+
 const init = () => {
 
 	radiusCubeCollection = 50;
@@ -39,29 +53,17 @@ const init = () => {
 	amountCubes = 10;
 
 	ctx = new AudioContext();
+  player = new Player(ctx);
+
 	window.AudioContext =
     window.AudioContext ||
     window.webkitAudioContext;
 
+  let setting = settings[2];
+  loadSetting(setting);
+
 	parametersSETUP();
-	slidersSETUP();
-	//analyseAudio();
-
-	// scene = new THREE.Scene();
- //  	camera = new THREE.PerspectiveCamera(
-	// 75, window.innerWidth/window.innerHeight, 0.1, 1000
- //  );
-
-// scene = new THREE.Scene();
- //   camera = new THREE.PerspectiveCamera(
-  // 75, window.innerWidth/window.innerHeight, 0.1, 1000
- //  );
-
- //  renderer = new THREE.WebGLRenderer();
- //  renderer.setSize(
- //   window.innerWidth,
-  // window.innerHeight
- //  );
+	// analyseAudio();
 
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(
@@ -77,12 +79,11 @@ const init = () => {
   );
 
   new OrbitControls(camera);
-  document.querySelector('main').appendChild(renderer.domElement);
+  document.querySelector('.view').appendChild(renderer.domElement);
 
-  createSpheres();
+  createSpheres(setting);
   createCubes();
   render();
-
 };
 
 const removeEntity = (object) => {
@@ -91,8 +92,7 @@ const removeEntity = (object) => {
 
 };
 
-
-const slidersSETUP = () => {
+const slidersSETUP = (setting) => {
 
 	$('#val_amount_spheres').html(amountSpheres);
 
@@ -103,7 +103,6 @@ const slidersSETUP = () => {
       value: 10,
 
 			slide: function(event, ui) {
-
 
 				$('#val_amount_spheres').html(ui.value);
 
@@ -118,7 +117,7 @@ const slidersSETUP = () => {
 					cubes = [];
 					amountSpheres = ui.value;
 					amountCubes = ui.value;
-					createSpheres();
+					createSpheres(setting);
 					createCubes();
 				}
 	});
@@ -147,7 +146,7 @@ const slidersSETUP = () => {
         //  cubes = [];
         //  amountSpheres = ui.value;
         //  amountCubes = ui.value;
-          createSpheres();
+          createSpheres(setting);
           createCubes();
         }
   });
@@ -223,20 +222,12 @@ const parametersSETUP = () => {
   };
 };
 
-const createSpheres = () => {
-// this.parametersSpheres = {
- //    radius: radius,
- //    widthSegments: widthSegments,
- //    heightSegments: heightSegments,
- //    phiStart: phiStart,
- //    phiLength: phiLength,
- //    thetaStart: thetaStart,
- //    thetaLength: thetaLength
- //  };
-
+const createSpheres = (setting) => {
   let angle = 0;
   let step = (2*Math.PI) / amountSpheres;
 
+   let {type, from, to, amount} = setting;
+   amount = amount;
 
   for(let i = 0; i< amountSpheres; i++ ){
 
@@ -255,9 +246,21 @@ const createSpheres = () => {
    );
    angle += step;
 
+
+   circle.type = type;
+   if(type === 'osc'){
+
+      from = parseInt(from);
+      to = parseInt(to);
+
+      circle.frequency = from + ((to / amount) * i);
+
+    }
+
    scene.add(circle.render());
    let {x, y, z} = circle.position;
    spheres.push(circle);
+
    console.log(x, y, z);
 
  }
@@ -266,20 +269,9 @@ const createSpheres = () => {
   camera.position.z = 150;
  //  camera.position.x = 50;
   // scene.remove(circle.render());
-
 };
 
 const createCubes = () => {
-
-// this.parameters = {
-// width: 15,
-  // height: 15
-  // widthSegments: 8,
-  // heightSegments: 8,
-  // depth: 0,
-  // depthSegments: 6,
- //  };
-
   let angle = 0;
   let step = (2*Math.PI) / amountCubes;
 
@@ -315,12 +307,9 @@ const createCubes = () => {
 };
 
 const render = () => {
-
   renderer.render(scene, camera);
   //analyser.getByteFrequencyData(frequencyData);
-
   requestAnimationFrame(() => render());
-
 };
 
 const analyseAudio = () => {
@@ -333,7 +322,6 @@ const analyseAudio = () => {
   audioSrc.connect(ctx.destination);
   analyser.fftSize = 256;
   frequencyData = new Uint8Array(analyser.frequencyBinCount);
-
 
   audio.play();
 

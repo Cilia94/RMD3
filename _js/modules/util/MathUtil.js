@@ -21,10 +21,10 @@ export const randomPoint = bounds => {
   };
 
   // shape.position.x = randomBetween(0, range, true, true);
-  //   shape.position.y = randomBetween(0, range, true, true);
-  //   shape.position.z = randomBetween(0, range, true, true);
-
+  // shape.position.y = randomBetween(0, range, true, true);
+  // shape.position.z = randomBetween(0, range, true, true);
 };
+
 
 const randomBetween = (min, max, round=true, signed=false) => {
   let rand = min + Math.random() * (max-min);

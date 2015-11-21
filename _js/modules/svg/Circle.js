@@ -1,7 +1,7 @@
 'use strict';
 
 
-//import {MathUtil} from '../util/';
+import {SoundUtil} from '../util/';
 
 import EventEmitter from 'eventemitter2';
 
@@ -11,22 +11,15 @@ export default class Circle extends EventEmitter {
 
 		super();
 
-	// let parameters = {
-	// radius: 15,
-	// widthSegments: 8,
-	// heightSegments: 8,
-	// phiStart: 0,
-	// phiLength: 6,
-	// thetaStart: 1,
-	// thetaLength: 4.2
-	// }
-
 		this.position = position;
 		//this.name = "testn";
 		this.fill = '#90FFFF';
-		this._onFrame();
+    //this.fill = this.effect.color;
+    this._onFrame();
 
 		this.parameters = parameters;
+
+    console.log(this);
 
 	}
 
